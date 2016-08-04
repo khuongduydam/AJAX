@@ -25,7 +25,13 @@
 <script>
   $(function(){
     $('button').click(function(){
-      $('td').load('abc.txt');
+      $.ajax({
+        url: "abc.txt",
+        dataType: "text",
+        success: function(data){
+          $("td").html(data + "\n");
+        }
+      });
     });
   });
 </script>
