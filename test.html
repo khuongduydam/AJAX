@@ -14,6 +14,12 @@
     <table class="table table-bordered table-striped">
       <thead>
         <h4 class="text-center">List something</h4>
+        <select style="float:right;" id="box">
+          <option value="5">5</option>
+          <option value="10" selected="">10</option>
+          <option value="15">15</option>
+          <option value="23">23</option>
+        </select>
         <tr>
           <td><h4>Email</h4></td>
           <td><h4>First Name</h4></td>
@@ -29,16 +35,19 @@
     <div><p>Total in file: <span name="file"></span></p></div>
   </div>
   <script>
-    $(function(){ 
-      $('#paging').twbsPagination({
-        totalPages: 8,
-        visiblePages: 3,
-        onPageClick: function (event, page) {
+    $(function(){
+      var elem = document.getElementById('box');
+      per_page = elem.options[elem.selectedIndex].value;
+      $('#box').on('click',function(){
+        per_page = $(this).val();
+        $('#paging').data("twbsPagination","");
+        var total = Math.round($('span[name=file]').text()/per_page);
+        $('#paging').twbsPagination({totalPages: total});
           $.ajax(
           { 
-            url: 'https://dev.monetrack.com/test_users', 
+            url: 'http://192.168.1.137:5000/test_users', 
             dataType: 'json',
-            data: {page: page, per_page: 23 },
+            data: {page: page, per_page: per_page },
             success: function(data){
               $.each(data.data,function(key,value){ 
                 $('tbody').append('<tr><td>'+value.email+'</td><td>'+value.first_name+'</td><td>'+value.language+'</td><td>'+value.last_name+'</tr>');
@@ -47,12 +56,29 @@
               $('span[name=file]').text(data.total_record);
             }
           });
-        }
+        });
+        $('#paging').twbsPagination({
+          totalPages: 66,
+          onPageClick: function (event, page) {
+            $.ajax(
+            { 
+              url: 'http://192.168.1.137:5000/test_users', 
+              dataType: 'json',
+              data: {page: page, per_page: per_page },
+              success: function(data){
+                $.each(data.data,function(key,value){ 
+                  $('tbody').append('<tr><td>'+value.email+'</td><td>'+value.first_name+'</td><td>'+value.language+'</td><td>'+value.last_name+'</tr>');
+                });
+                $('span[name=shown]').text($('tbody tr').length);
+                $('span[name=file]').text(data.total_record);
+              }
+            });
+          }
+        });
+        $(document).ajaxStart(function(){
+          $('tbody').empty(); 
+        });
       });
-      $(document).ajaxStart(function(){
-        $('tbody').empty();
-      });
-    });
-  </script>
-</body>
-</html>
+    </script>
+  </body>
+  </html>
