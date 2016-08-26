@@ -1,45 +1,108 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>  
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script src="jquery.validate.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>  
+  <script src="jquery.twbsPagination.js"></script>  
+  <script src="main.js"></script>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
 </head>
 <body>
-<div class="container">
-  <table class="table table-bordered table-striped">
-    <thead>
-    <h4 class="text-center">List something</h4>
-      <tr>
-        <td><h4>Name</h4></td>
-        <td><h4>Email</h4></td>
-        <td><h4>Website</h4></td>
-        <td><h4>Title</h4></td>
-      </tr>
-    </thead>
-    <tbody>
-    </tbody>
-  </table>
-  <div><p>Total shown: <span name="shown"></span></p></div>
-  <div><p>Total in file: <span name="file"></span></p></div>
-</div>
-<button class="center-block btn btn-info">Click here to load something</button>
-<script>
-  $(function(){
-    $('button').click(function(){
-      $.getJSON('test.json',function(data){
-        $.each(data.list,function(key,value){ 
-          $('tbody').append('<tr><td>'+value.name+'</td><td>'+value.email+'</td><td>'+value.website+'</td><td>'+value.title+'</tr>');
+  <div class="well center-block" style="width:300px;margin-top:50px;">
+    <form id="myForm" class="text-center">
+      <input type="text" name="username" placeholder="username" class="form-control center-block" style="width: 200px;">
+      <br><input type="email" name="email" placeholder="email" class="form-control center-block" style="width:200px;" id="email">
+      <br><input type="password" name="password" placeholder="password" style="margin-top:10px;width: 200px;" class="form-control center-block" id="password">
+      <br><input type="password" name="confirm_password" placeholder="confirm password" style="margin-top:10px;width: 200px;" class="form-control center-block">
+      <br><input type="text" name="description" placeholder="description" style="margin-top:10px;width: 200px;" class="form-control center-block">
+      <br><button type="submit" class="btn btn-primary">Validate</button>
+    </form>
+    <script>
+    //Custom validation for description(allow nil or limit 10 character when input)
+    $.validator.addMethod("description",function(value, element){
+      return this.optional(element) || value == value.match(/^[a-zA-Z\s]+$/)
+    });
+      //custom validation for email with data getting from JSON
+      //load data from JSON first
+      //then, handle on client
+      //note: async:false in ajax(keep this statement complete before any other statement start)
+      $.validator.addMethod("email",function(value,element){
+        var email_data;
+        var result;
+        $.ajax({
+          async: false,
+          url: 'data2.json',
+          dataType: 'json',
+          success: function(data){
+           email_data = data
+         },
+       });
+        //***remember return something first in each function***
+        $.each(email_data,function(i){
+          if(email_data[i] == $('input[name=email]').val())
+          {
+            result = email_data[i]
+          }
         });
-        $('span[name=shown]').text($('tbody tr').length);
-        $('span[name=file]').text(data.total);
-        if($('tbody tr').length >= data.total){
-          $('button').attr('disabled',"");
+        //complete return validation, full return true and false
+        if(result){
+          return false
+        }
+        else
+        {
+          return true
+        }
+      },"Email has been taken");
+      $('#myForm').validate({
+        rules:{
+          username:{
+            required: true,
+            minlength: 10,
+            maxlength: 20
+          },
+          password:{
+            required: true,
+            minlength:5,
+            maxlength:10
+          },
+          confirm_password:{
+            required: true,
+            minlength:5,
+            maxlength:10,
+            equalTo: "#password"
+          },
+          email:{
+            required: true,
+            email: true
+          },
+          description:{
+            minlength: 10 
+          }
+        },
+        messages:{
+          username: {
+            required: "Please enter username",
+            minlength: "Username is too short",
+            maxlength: "Username is too long"
+          },
+          password:{
+            required: "Please enter password",
+            minlength: "password is too short",
+            maxlength: "password is too long"
+          },
+          confirm_password:{
+            required: "Please enter password again",
+            minlength: "password is too short",
+            maxlength: "password is too long"
+          },
+          email:{
+            required: "Please enter email!!!"
+          }
         }
       });
-    });
-  });
-</script>
+    </script>
+  </div>
 </body>
 </html>
