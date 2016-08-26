@@ -20,7 +20,7 @@
       <br><button type="submit" class="btn btn-primary">Validate</button>
     </form>
     <script>
-    //Custom validation for description(allow nil or limit 10 character when input)
+    //Custom validation for description(allow empty or limit 10 character when input)
     $.validator.addMethod("description",function(value, element){
       return this.optional(element) || value == value.match(/^[a-zA-Z\s]+$/)
     });
